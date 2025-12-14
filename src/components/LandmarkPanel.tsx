@@ -69,11 +69,11 @@ const LandmarkPanel: React.FC<LandmarkPanelProps> = ({ isOpen, onClose, landmark
     return processedImages;
   }, [landmark]);
   
-  // Helper function to clean image URLs
-  const cleanImageUrl = (url: string): string => {
+  // Helper function to clean image URLs - wrapped in useCallback to avoid dependency changes
+  const cleanImageUrl = useCallback((url: string): string => {
     // Using character classes instead of escaping brackets
     return url.replace(/[[\]"']/g, '');
-  };
+  }, []);
 
   // Fullscreen image functions
   const openFullscreen = (imageUrl: string, index: number) => {
