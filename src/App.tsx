@@ -9,6 +9,7 @@ import almaty_1986 from './data_history/almaty_1986.geojson';
 import almaty_1991 from './data_history/almaty_1991.geojson';
 import Timeline from './components/Timeline';
 import LandmarkPanel from './components/LandmarkPanel';
+import LoadingSpinner from './components/LoadingSpinner';
 
 
 const availableYears = [1986, 1991];
@@ -17,6 +18,7 @@ function App() {
   const mapContainer = useRef<HTMLDivElement>(null);
   const map = useRef<maplibregl.Map | null>(null);
   const [currentYear, setCurrentYear] = useState(1986);
+  const [isMapLoading, setIsMapLoading] = useState(true);
   
   // State for landmark panel
   const [isPanelOpen, setIsPanelOpen] = useState(false);
@@ -75,8 +77,9 @@ function App() {
       }
 
       updateMapData(1986);
-
       
+      // Hide loading spinner when map is loaded
+      setIsMapLoading(false);
     });
 
     
@@ -127,9 +130,9 @@ function App() {
           'fill-color': [
             'case',
             
-            ['==', ['get', 'NAME'], 'Kazakhstan'], '#00a7f4ff',
-            ['==', ['get', 'NAME'], 'Kazakh USSR'], '#00a7f4ff',
-            ['==', ['get', 'NAME'], 'USSR'], '#ffd700',
+            ['==', ['get', 'NAME'], 'Қазақстан'], '#00a7f4ff',
+            ['==', ['get', 'NAME'], 'Қазақстан КСР'], '#00a7f4ff',
+            ['==', ['get', 'NAME'], 'КСРО'], '#ffd700',
             '#f28cb1'
           ],
           'fill-opacity': 0.5
@@ -240,6 +243,9 @@ function App() {
     <>
       <div ref={mapContainer} className="map-container" />
       
+      {/* Loading spinner */}
+      {isMapLoading && <LoadingSpinner />}
+      
       {/* Landmark Panel as a separate component */}
       <LandmarkPanel 
         isOpen={isPanelOpen}
@@ -252,7 +258,7 @@ function App() {
           currentYear={currentYear}
           years={availableYears}
           onYearChange={setCurrentYear}
-          disable={isPanelOpen}
+          disable={isPanelOpen || isMapLoading}
         />
     </>
   );
