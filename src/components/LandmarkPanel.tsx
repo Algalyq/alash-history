@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef, TouchEvent } from 'react';
+import React, { useState, useEffect, useRef, TouchEvent, useMemo, useCallback } from 'react';
 import '../styles/LandmarkPanel.css';
 
 interface LandmarkPanelProps {
@@ -37,38 +37,42 @@ const LandmarkPanel: React.FC<LandmarkPanelProps> = ({ isOpen, onClose, landmark
   const storiesContainerRef = useRef<HTMLDivElement>(null);
   
   
-  // Process images to ensure it's always an array
-  let images: string[] = [];
-  
-  if (landmark) {
-    if (Array.isArray(landmark.images)) {
-      // If it's already an array, use it directly
-      // Make sure each element is a string, not an array
-      images = landmark.images.map(img => {
-        if (typeof img === 'string') {
-          return img;
-        } else if (Array.isArray(img)) {
-          // If an element is itself an array, take the first string
-          return typeof img[0] === 'string' ? img[0] : '';
+  // Process images to ensure it's always an array - wrapped in useMemo to avoid dependency changes
+  const images = useMemo(() => {
+    let processedImages: string[] = [];
+    
+    if (landmark) {
+      if (Array.isArray(landmark.images)) {
+        // If it's already an array, use it directly
+        // Make sure each element is a string, not an array
+        processedImages = landmark.images.map(img => {
+          if (typeof img === 'string') {
+            return img;
+          } else if (Array.isArray(img)) {
+            // If an element is itself an array, take the first string
+            return typeof img[0] === 'string' ? img[0] : '';
+          }
+          return '';
+        }).filter(img => img !== '');
+        console.log("Processed images:", processedImages);
+      } else if (typeof landmark.images === 'string') {
+        if (landmark.images.includes(',')) {
+          // If it's a comma-separated string, split it into an array
+          processedImages = landmark.images.split(',');
+        } else if (landmark.images.trim() !== '') {
+          // If it's a single string value, make it a one-item array
+          processedImages = [landmark.images];
         }
-        return '';
-      }).filter(img => img !== '');
-      console.log("Processed images:", images);
-    } else if (typeof landmark.images === 'string') {
-      if (landmark.images.includes(',')) {
-        // If it's a comma-separated string, split it into an array
-        images = landmark.images.split(',');
-      } else if (landmark.images.trim() !== '') {
-        // If it's a single string value, make it a one-item array
-        images = [landmark.images];
       }
     }
-  }
+    
+    return processedImages;
+  }, [landmark]);
   
   // Helper function to clean image URLs
   const cleanImageUrl = (url: string): string => {
-    // Fix unnecessary escape characters
-    return url.replace(/[\[\]"']/g, '');
+    // Using character classes instead of escaping brackets
+    return url.replace(/[[\]"']/g, '');
   };
 
   // Fullscreen image functions
@@ -87,23 +91,25 @@ const LandmarkPanel: React.FC<LandmarkPanelProps> = ({ isOpen, onClose, landmark
     document.body.style.overflow = '';
   };
   
-  const nextFullscreenImage = () => {
+  // Wrap in useCallback to avoid dependency changes in useEffect
+  const nextFullscreenImage = useCallback(() => {
     if (images && fullscreenIndex < images.length - 1) {
       const nextIndex = fullscreenIndex + 1;
       const nextImage = cleanImageUrl(images[nextIndex]);
       setFullscreenImage(nextImage);
       setFullscreenIndex(nextIndex);
     }
-  };
+  }, [images, fullscreenIndex, cleanImageUrl]);
   
-  const prevFullscreenImage = () => {
+  // Wrap in useCallback to avoid dependency changes in useEffect
+  const prevFullscreenImage = useCallback(() => {
     if (fullscreenIndex > 0) {
       const prevIndex = fullscreenIndex - 1;
       const prevImage = cleanImageUrl(images[prevIndex]);
       setFullscreenImage(prevImage);
       setFullscreenIndex(prevIndex);
     }
-  };
+  }, [images, fullscreenIndex, cleanImageUrl]);
   
   // Reset the current image index when the panel opens or landmark changes
   useEffect(() => {
@@ -288,8 +294,8 @@ const LandmarkPanel: React.FC<LandmarkPanelProps> = ({ isOpen, onClose, landmark
             {images.map((image: string, index: number) => {
               // Ensure image is a clean string
               console.log("Original Image URL:", image);
-              // Remove any array brackets if they exist - fix unnecessary escape characters
-              const cleanImage = image.replace(/[\[\]"']/g, '');
+              // Remove any array brackets if they exist - using character classes instead of escaping
+              const cleanImage = image.replace(/[["\]]/g, '');
               const imageUrl = cleanImage;
               console.log("Cleaned Image URL:", imageUrl);
               
