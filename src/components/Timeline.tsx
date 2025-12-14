@@ -20,12 +20,27 @@ const Timeline: React.FC<TimelineProps> = ({ currentYear, years, onYearChange, d
         const yearElement = document.getElementById(`year-tick-${currentYear}`);
         if (yearElement) {
             const container = scrollerRef.current;
+            // Ensure precise alignment by calculating exact center positions
             const scrollLeft = yearElement.offsetLeft - container.clientWidth / 2 + yearElement.clientWidth / 2;
 
             container.scrollTo({
                 left: scrollLeft,
                 behavior: 'smooth'
             });
+            
+            // Force a recheck after animation completes to ensure perfect alignment
+            setTimeout(() => {
+                const finalYearElement = document.getElementById(`year-tick-${currentYear}`);
+                if (finalYearElement && container) {
+                    const finalScrollLeft = finalYearElement.offsetLeft - container.clientWidth / 2 + finalYearElement.clientWidth / 2;
+                    if (Math.abs(container.scrollLeft - finalScrollLeft) > 2) {
+                        container.scrollTo({
+                            left: finalScrollLeft,
+                            behavior: 'auto'
+                        });
+                    }
+                }
+            }, 500);
         }
     }, [currentYear]);
 
@@ -38,8 +53,18 @@ const Timeline: React.FC<TimelineProps> = ({ currentYear, years, onYearChange, d
         if (scrollTimeout.current) clearTimeout(scrollTimeout.current);
         scrollTimeout.current = setTimeout(() => {
             isScrolling.current = false;
+            // When scrolling stops, snap to the closest year for perfect alignment
+            snapToClosestYear();
         }, 150);
 
+        // During scrolling, update the year based on position
+        updateYearFromScroll();
+    };
+    
+    // Function to update the year based on scroll position
+    const updateYearFromScroll = () => {
+        if (!scrollerRef.current) return;
+        
         const container = scrollerRef.current;
         const center = container.scrollLeft + container.clientWidth / 2;
 
@@ -59,9 +84,45 @@ const Timeline: React.FC<TimelineProps> = ({ currentYear, years, onYearChange, d
         });
 
         if (closestYear !== currentYear) {
-            // We can debit this call if it's too frequent, but for 2 items it's fine.
-            // For smoother UI, we might want to only trigger on snap, but "changing frequency" implies live updating.
             onYearChange(closestYear);
+        }
+    };
+    
+    // Function to snap to the closest year for perfect alignment
+    const snapToClosestYear = () => {
+        if (!scrollerRef.current) return;
+        
+        const container = scrollerRef.current;
+        const center = container.scrollLeft + container.clientWidth / 2;
+
+        let closestYear = years[0];
+        let minDistance = Infinity;
+
+        years.forEach(year => {
+            const element = document.getElementById(`year-tick-${year}`);
+            if (element) {
+                const elementCenter = element.offsetLeft + element.clientWidth / 2;
+                const distance = Math.abs(center - elementCenter);
+                if (distance < minDistance) {
+                    minDistance = distance;
+                    closestYear = year;
+                }
+            }
+        });
+
+        // If we found a closest year and it's different from current
+        if (closestYear !== currentYear) {
+            onYearChange(closestYear);
+        }
+        
+        // Snap to the closest year for perfect alignment
+        const yearElement = document.getElementById(`year-tick-${closestYear}`);
+        if (yearElement && scrollerRef.current) {
+            const scrollLeft = yearElement.offsetLeft - container.clientWidth / 2 + yearElement.clientWidth / 2;
+            container.scrollTo({
+                left: scrollLeft,
+                behavior: 'smooth'
+            });
         }
     };
 

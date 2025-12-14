@@ -425,12 +425,12 @@ transform: translateY(0);
 /* Mobile Responsiveness */
 @media (max-width: 600px) {
   .landmark-panel-container.open {
-    height: 90%;
+    height: 70%;
   }
 
   .landmark-content {
     padding: 0 10px 15px;
-    max-height: 30vh; /* Slightly larger on mobile for better readability */
+    /* max-height: 30vh; */
   }
   
   .panel-title {
