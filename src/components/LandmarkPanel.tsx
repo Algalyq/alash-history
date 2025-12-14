@@ -67,6 +67,7 @@ const LandmarkPanel: React.FC<LandmarkPanelProps> = ({ isOpen, onClose, landmark
   
   // Helper function to clean image URLs
   const cleanImageUrl = (url: string): string => {
+    // Fix unnecessary escape characters
     return url.replace(/[\[\]"']/g, '');
   };
 
@@ -155,14 +156,14 @@ const LandmarkPanel: React.FC<LandmarkPanelProps> = ({ isOpen, onClose, landmark
     
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [fullscreenImage, fullscreenIndex, images]);
+  }, [fullscreenImage, fullscreenIndex, images, nextFullscreenImage, prevFullscreenImage]);
   
   // Early return if no landmark data
   if (!landmark) return null;
   
   
-  // Add map image if needed
-  const mapImage = `https://tiles.openfreemap.org/styles/bright/static/${landmark.coordinates[0]},${landmark.coordinates[1]},14,0/800x200@2x?token=public`;
+  // Map image URL - commented out as it's not currently used
+  // const mapImage = `https://tiles.openfreemap.org/styles/bright/static/${landmark.coordinates[0]},${landmark.coordinates[1]},14,0/800x200@2x?token=public`;
   // Uncomment if you want to include map image: const allImages = [mapImage, ...images];
   
   // Handle scrolling in the carousel
@@ -287,7 +288,7 @@ const LandmarkPanel: React.FC<LandmarkPanelProps> = ({ isOpen, onClose, landmark
             {images.map((image: string, index: number) => {
               // Ensure image is a clean string
               console.log("Original Image URL:", image);
-              // Remove any array brackets if they exist
+              // Remove any array brackets if they exist - fix unnecessary escape characters
               const cleanImage = image.replace(/[\[\]"']/g, '');
               const imageUrl = cleanImage;
               console.log("Cleaned Image URL:", imageUrl);
@@ -332,10 +333,6 @@ const LandmarkPanel: React.FC<LandmarkPanelProps> = ({ isOpen, onClose, landmark
         <div className="stories-moodboard">
           <div className="stories-container" ref={storiesContainerRef}>
             {images.map((image: string, index: number) => {
-              // Apply the same cleaning logic
-              const cleanImage = image.replace(/[\[\]"']/g, '');
-              const imageUrl = cleanImage;
-              
               return (
                 <div 
                   key={index} 

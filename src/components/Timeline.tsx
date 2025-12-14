@@ -1,4 +1,4 @@
-import React, { useRef, useEffect, useState } from 'react';
+import React, { useRef, useEffect } from 'react';
 import '../styles/Timeline.css';
 
 interface TimelineProps {
@@ -151,7 +151,7 @@ const Timeline: React.FC<TimelineProps> = ({ currentYear, years, onYearChange, d
                     const intermediateMarkers = [];
                     if (hasNextYear) {
                         // Add more intermediate markers between main markers (like radio frequency)
-                        const yearDiff = nextYear - year;
+                        // const yearDiff = nextYear - year; // Not currently used
                         const markerCount = 7; // More markers for dense radio frequency look
                         
                         for (let i = 1; i <= markerCount; i++) {
