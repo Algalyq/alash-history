@@ -152,7 +152,7 @@ const Timeline: React.FC<TimelineProps> = ({ currentYear, years, onYearChange, d
                     if (hasNextYear) {
                         // Add more intermediate markers between main markers (like radio frequency)
                         // const yearDiff = nextYear - year; // Not currently used
-                        const markerCount = 7; // More markers for dense radio frequency look
+                        const markerCount = 4; // More markers for dense radio frequency look
                         
                         for (let i = 1; i <= markerCount; i++) {
                             // Calculate height variation for radio frequency look
