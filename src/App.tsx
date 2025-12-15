@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useRef, useState, useMemo } from 'react';
 import './styles/App.css';
 import maplibregl from 'maplibre-gl';
 import 'maplibre-gl/dist/maplibre-gl.css';
@@ -12,7 +12,8 @@ import LandmarkPanel from './components/LandmarkPanel';
 import LoadingSpinner from './components/LoadingSpinner';
 
 
-const availableYears = [1922, 1937, 1933, 1986, 1991, 2019, 2022];
+// Available years for timeline
+const AVAILABLE_YEARS = [1922, 1937, 1933, 1986, 1991, 2019, 2022];
 
 // Helper function to find the closest year with available data
 function findClosestYearWithData(targetYear: number, yearsWithData: number[]): number {
@@ -114,9 +115,9 @@ function App() {
     // map.current.addControl(layersControl);
   }, []);
 
-  // Years with available data
-  const yearsWithMapData = [1986, 1991];
-  const yearsWithLandmarkData = [1986, 1991];
+  // Years with available data - memoized to prevent re-renders
+  const yearsWithMapData = useMemo(() => [1986, 1991], []);
+  const yearsWithLandmarkData = useMemo(() => [1986, 1991], []);
   
   // Update map data when year changes
   useEffect(() => {
@@ -327,7 +328,7 @@ function App() {
       {/* Timeline is deactivated when panel is open */}
         <Timeline
           currentYear={currentYear}
-          years={availableYears}
+          years={AVAILABLE_YEARS}
           onYearChange={setCurrentYear}
           disable={isPanelOpen || isMapLoading}
         />
