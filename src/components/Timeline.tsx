@@ -1,4 +1,4 @@
-import React, { useRef, useEffect, useState } from 'react';
+import React, { useRef, useEffect } from 'react';
 import '../styles/Timeline.css';
 interface TimelineProps {
     currentYear: number;
@@ -11,9 +11,6 @@ const Timeline: React.FC<TimelineProps> = ({ currentYear, years, onYearChange, d
     const scrollerRef = useRef<HTMLDivElement>(null);
     const isScrolling = useRef(false);
     const scrollTimeout = useRef<NodeJS.Timeout | null>(null);
-    const [touchStartX, setTouchStartX] = useState<number | null>(null);
-    const [touchStartY, setTouchStartY] = useState<number | null>(null);
-    const minSwipeDistance = 50;
 
     // Center the current year
     useEffect(() => {
@@ -105,73 +102,6 @@ const Timeline: React.FC<TimelineProps> = ({ currentYear, years, onYearChange, d
         }
     };
 
-    // Handle touch start
-    const handleTouchStart = (e: React.TouchEvent) => {
-        const touch = e.targetTouches[0];
-        setTouchStartX(touch.clientX);
-        setTouchStartY(touch.clientY);
-    };
-
-    // Handle touch move - SIMPLIFIED - only for swipe detection
-    const handleTouchMove = (e: React.TouchEvent) => {
-        // Don't prevent default - allow native scrolling
-        if (!touchStartX || !touchStartY) return;
-        
-        const touch = e.targetTouches[0];
-        const currentX = touch.clientX;
-        const currentY = touch.clientY;
-        
-        // If we're already scrolling, just return
-        if (isScrolling.current) return;
-        
-        // Check if this is primarily horizontal movement
-        const diffX = touchStartX - currentX;
-        const diffY = touchStartY - currentY;
-        
-        // If vertical movement is more dominant, let it scroll naturally
-        if (Math.abs(diffY) > Math.abs(diffX)) {
-            return;
-        }
-    };
-
-    // Handle touch end for swipe detection
-    const handleTouchEnd = (e: React.TouchEvent) => {
-        if (!touchStartX || !touchStartY) return;
-        
-        const touch = e.changedTouches[0];
-        const endX = touch.clientX;
-        const endY = touch.clientY;
-        
-        const diffX = touchStartX - endX;
-        const diffY = touchStartY - endY;
-        
-        // If vertical movement is more than horizontal, it was a scroll, not a swipe
-        if (Math.abs(diffY) > Math.abs(diffX) * 1.5) {
-            setTouchStartX(null);
-            setTouchStartY(null);
-            return;
-        }
-        
-        // Check for swipe
-        const distance = diffX;
-        const isLeftSwipe = distance > minSwipeDistance;
-        const isRightSwipe = distance < -minSwipeDistance;
-        
-        if (isLeftSwipe && currentYear < Math.max(...years)) {
-            const currentIndex = years.indexOf(currentYear);
-            if (currentIndex < years.length - 1) {
-                onYearChange(years[currentIndex + 1]);
-            }
-        } else if (isRightSwipe && currentYear > Math.min(...years)) {
-            const currentIndex = years.indexOf(currentYear);
-            if (currentIndex > 0) {
-                onYearChange(years[currentIndex - 1]);
-            }
-        }
-        
-        setTouchStartX(null);
-        setTouchStartY(null);
-    };
 
     return (
         <div className={`radio-timeline-bottom ${disable ? 'disabled' : ''}`}>
@@ -192,14 +122,11 @@ const Timeline: React.FC<TimelineProps> = ({ currentYear, years, onYearChange, d
                 <div className="needle-glow"></div>
             </div>
 
-            {/* Scrollable Timeline */}
+            {/* Scrollable Timeline - Native scroll only */}
             <div
                 className="radio-scroller"
                 ref={scrollerRef}
                 onScroll={handleScroll}
-                onTouchStart={handleTouchStart}
-                onTouchMove={handleTouchMove}
-                onTouchEnd={handleTouchEnd}
             >
                 <div className="timeline-spacer"></div>
                 {years.map((year, index) => {
@@ -239,12 +166,6 @@ const Timeline: React.FC<TimelineProps> = ({ currentYear, years, onYearChange, d
                                 onClick={() => {
                                     onYearChange(year);
                                     isScrolling.current = false;
-                                }}
-                                onTouchEnd={(e) => {
-                                    if (!touchStartX || Math.abs(e.changedTouches[0].clientX - (touchStartX || 0)) < 10) {
-                                        onYearChange(year);
-                                        isScrolling.current = false;
-                                    }
                                 }}
                             >
                                 <div className="radio-tick"></div>
