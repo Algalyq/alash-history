@@ -140,45 +140,30 @@
 
 /* Radio Scroller - FIXED FOR MOBILE */
 .radio-scroller {
-    pointer-events: auto;
+    pointer-events: auto !important;
     display: flex;
     align-items: flex-end;
-    overflow-x: auto;
+    overflow-x: scroll !important; /* Changed from auto to scroll */
     overflow-y: hidden;
     width: 100%;
     height: 90px;
     padding-bottom: 20px;
     scrollbar-width: none;
     -ms-overflow-style: none;
-    /* scroll-behavior: smooth; ← REMOVED - can block native touch scroll */
     cursor: grab;
     position: relative;
     
-    /* FIXED: Mobile scrolling properties */
-    -webkit-overflow-scrolling: touch !important;
-    overflow-scrolling: touch !important;
-    touch-action: pan-x !important;
-    overscroll-behavior-x: contain;
+    /* CRITICAL: Mobile scrolling properties */
+    -webkit-overflow-scrolling: touch;
+    touch-action: pan-x; /* Allow horizontal pan only */
     
-    /* Prevent text selection */
+    /* Prevent text selection during scroll */
     -webkit-user-select: none;
     -moz-user-select: none;
     -ms-user-select: none;
     user-select: none;
     
-    /* Remove potentially interfering properties */
-    /* will-change: transform; ← REMOVED */
-    /* transform: translateZ(0); ← REMOVED */
-    /* -webkit-transform: translateZ(0); ← REMOVED */
-    
-    /* Better mobile performance */
-    backface-visibility: hidden;
-    -webkit-backface-visibility: hidden;
-    
-    /* Prevent iOS pull-to-refresh */
-    overscroll-behavior: none;
-    
-    /* Snap for better mobile experience */
+    /* Snap for better experience */
     scroll-snap-type: x proximity;
 }
 
@@ -395,23 +380,4 @@
     }
 }
 
-/* Prevent content jumping on mobile - CAREFUL: don't block scroll */
-html {
-    /* overflow-x: hidden; ← REMOVED - can block horizontal scroll */
-    position: relative;
-    height: 100%;
-}
-
-body {
-    /* overflow-x: hidden; ← REMOVED - can block horizontal scroll */
-    position: relative;
-    height: 100%;
-    -webkit-font-smoothing: antialiased;
-    -moz-osx-font-smoothing: grayscale;
-}
-
-/* Ensure no interference from parent containers */
-.radio-timeline-container {
-    overflow: visible !important;
-    position: relative !important;
-}
+/* html/body styles moved to App.css */
