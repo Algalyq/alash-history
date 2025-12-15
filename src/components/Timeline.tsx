@@ -51,7 +51,7 @@ const Timeline: React.FC<TimelineProps> = ({ currentYear, years, onYearChange, d
             
             return () => timers.forEach(timer => clearTimeout(timer));
         }
-    }, []); // Empty dependency array - only run on mount
+    }, [currentYear]); // Include currentYear in dependency array
     
     // Handle centering when year changes
     useEffect(() => {

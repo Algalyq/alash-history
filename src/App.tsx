@@ -148,7 +148,7 @@ function App() {
         }
       }
     }
-  }, [currentYear]);
+  }, [currentYear, yearsWithMapData, yearsWithLandmarkData]);
 
   const updateMapData = (year: number) => {
     if (!map.current) return;
