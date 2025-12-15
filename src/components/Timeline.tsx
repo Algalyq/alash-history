@@ -1,5 +1,5 @@
 import React, { useRef, useEffect, useState } from 'react';
-import '../styles/Timeline.css';
+import '../styles/RadioTimeline.css';
 
 interface TimelineProps {
     currentYear: number;
@@ -16,6 +16,73 @@ const Timeline: React.FC<TimelineProps> = ({ currentYear, years, onYearChange, d
     const [touchEnd, setTouchEnd] = useState<number | null>(null);
     const minSwipeDistance = 50;
 
+    // Touch handling for mobile
+    useEffect(() => {
+        if (scrollerRef.current) {
+            const scroller = scrollerRef.current;
+            let startX = 0;
+            let startY = 0;
+            
+            const handleTouchStart = (e: Event) => {
+                const touchEvent = e as any;
+                startX = touchEvent.touches[0].clientX;
+                startY = touchEvent.touches[0].clientY;
+                setTouchStart(startX);
+            };
+            
+            const handleTouchMove = (e: Event) => {
+                const touchEvent = e as any;
+                if (!startX || !startY) return;
+                
+                const currentX = touchEvent.touches[0].clientX;
+                const currentY = touchEvent.touches[0].clientY;
+                const diffX = startX - currentX;
+                const diffY = startY - currentY;
+                
+                if (Math.abs(diffX) > Math.abs(diffY)) {
+                    e.preventDefault();
+                    setTouchEnd(currentX);
+                }
+            };
+            
+            const handleTouchEnd = () => {
+                if (!touchStart || !touchEnd) return;
+                
+                const distance = touchStart - touchEnd;
+                const isLeftSwipe = distance > minSwipeDistance;
+                const isRightSwipe = distance < -minSwipeDistance;
+                
+                if (isLeftSwipe && currentYear < Math.max(...years)) {
+                    const currentIndex = years.indexOf(currentYear);
+                    if (currentIndex < years.length - 1) {
+                        onYearChange(years[currentIndex + 1]);
+                    }
+                } else if (isRightSwipe && currentYear > Math.min(...years)) {
+                    const currentIndex = years.indexOf(currentYear);
+                    if (currentIndex > 0) {
+                        onYearChange(years[currentIndex - 1]);
+                    }
+                }
+                
+                setTouchStart(null);
+                setTouchEnd(null);
+                startX = 0;
+                startY = 0;
+            };
+            
+            scroller.addEventListener('touchstart', handleTouchStart, { passive: true });
+            scroller.addEventListener('touchmove', handleTouchMove, { passive: false });
+            scroller.addEventListener('touchend', handleTouchEnd);
+            
+            return () => {
+                scroller.removeEventListener('touchstart', handleTouchStart);
+                scroller.removeEventListener('touchmove', handleTouchMove);
+                scroller.removeEventListener('touchend', handleTouchEnd);
+            };
+        }
+    }, [currentYear, years, minSwipeDistance, touchStart, touchEnd, onYearChange]);
+
+    // Center the current year
     useEffect(() => {
         if (isScrolling.current || !scrollerRef.current) return;
 
@@ -28,6 +95,19 @@ const Timeline: React.FC<TimelineProps> = ({ currentYear, years, onYearChange, d
                 left: scrollLeft,
                 behavior: 'smooth'
             });
+            
+            setTimeout(() => {
+                const finalYearElement = document.getElementById(`year-tick-${currentYear}`);
+                if (finalYearElement && container) {
+                    const finalScrollLeft = finalYearElement.offsetLeft - container.clientWidth / 2 + finalYearElement.clientWidth / 2;
+                    if (Math.abs(container.scrollLeft - finalScrollLeft) > 2) {
+                        container.scrollTo({
+                            left: finalScrollLeft,
+                            behavior: 'auto'
+                        });
+                    }
+                }
+            }, 500);
         }
     }, [currentYear]);
 
@@ -106,17 +186,27 @@ const Timeline: React.FC<TimelineProps> = ({ currentYear, years, onYearChange, d
     };
 
     return (
-        <div className={`timeline-container ${disable ? 'disabled' : ''}`}>
-            <div className="timeline-needle"></div>
-            <div className="timeline-overlay-left"></div>
-            <div className="timeline-overlay-right"></div>
+        <div className={`radio-timeline-bottom ${disable ? 'disabled' : ''}`}>
+            {/* Gradient fade overlays */}
+            <div className="timeline-fade-left"></div>
+            <div className="timeline-fade-right"></div>
 
-            <div className="current-year-display">
-                {currentYear}
+            {/* Current Year Display */}
+            <div className="year-display-window">
+                <div className="display-inner">
+                    <div className="year-number">{currentYear}</div>
+                    <div className="led-strip"></div>
+                </div>
             </div>
 
+            {/* Central Red Needle */}
+            <div className="radio-needle">
+                <div className="needle-glow"></div>
+            </div>
+
+            {/* Scrollable Timeline */}
             <div
-                className="timeline-scroller"
+                className="radio-scroller"
                 ref={scrollerRef}
                 onScroll={handleScroll}
                 onTouchStart={(e: React.TouchEvent) => setTouchStart(e.targetTouches[0].clientX)}
@@ -146,36 +236,29 @@ const Timeline: React.FC<TimelineProps> = ({ currentYear, years, onYearChange, d
             >
                 <div className="timeline-spacer"></div>
                 {years.map((year, index) => {
-                    // Generate intermediate markers if there's a next year
                     const nextYear = years[index + 1];
                     const hasNextYear = nextYear !== undefined;
                     
-                    // Calculate intermediate years/frequencies if there's a next year
                     const intermediateMarkers = [];
                     if (hasNextYear) {
-                        const markerCount = 2; // Reduced number of markers for closer spacing
+                        const markerCount = 5;
                         
                         for (let i = 1; i <= markerCount; i++) {
-                            // Calculate height variation for radio frequency look
-                            // Create a pattern of varying heights for radio tuner effect
                             let heightClass;
                             if (i === Math.ceil(markerCount / 2)) {
-                                // Middle marker is medium height
                                 heightClass = 'medium';
                             } else if (i % 3 === 0) {
-                                // Every third marker is medium height
                                 heightClass = 'medium';
                             } else {
-                                // Rest are small
                                 heightClass = 'small';
                             }
                             
                             intermediateMarkers.push(
                                 <div
                                     key={`intermediate-${year}-${i}`}
-                                    className={`timeline-tick-wrapper intermediate`}
+                                    className="radio-tick-wrapper intermediate"
                                 >
-                                    <div className={`timeline-tick intermediate ${heightClass}`}></div>
+                                    <div className={`radio-tick intermediate ${heightClass}`}></div>
                                 </div>
                             );
                         }
@@ -184,28 +267,24 @@ const Timeline: React.FC<TimelineProps> = ({ currentYear, years, onYearChange, d
                     return (
                         <React.Fragment key={`fragment-${year}`}>
                             <div
-                                key={year}
                                 id={`year-tick-${year}`}
-                                className={`timeline-tick-wrapper ${currentYear === year ? 'active' : ''}`}
+                                className={`radio-tick-wrapper ${currentYear === year ? 'active' : ''}`}
                                 onClick={() => {
-                                    // On click, manually scroll to center
                                     onYearChange(year);
-                                    isScrolling.current = false; // Allow useEffect to center
+                                    isScrolling.current = false;
                                 }}
                                 onTouchEnd={(e) => {
-                                    // Prevent default to avoid any conflicts
                                     e.preventDefault();
                                     e.stopPropagation();
                                     
-                                    // Only trigger if not part of a swipe
                                     if (!touchStart || !touchEnd || Math.abs(touchStart - touchEnd) < 10) {
                                         onYearChange(year);
-                                        isScrolling.current = false; // Allow useEffect to center
+                                        isScrolling.current = false;
                                     }
                                 }}
                             >
-                                <div className="timeline-tick"></div>
-                                <span className="year-label">{year}</span>
+                                <div className="radio-tick"></div>
+                                <span className="tick-label">{year}</span>
                             </div>
                             {intermediateMarkers}
                         </React.Fragment>
@@ -216,6 +295,4 @@ const Timeline: React.FC<TimelineProps> = ({ currentYear, years, onYearChange, d
         </div>
     );
 };
-
-
 export default Timeline;
