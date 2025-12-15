@@ -1,3 +1,18 @@
+/* Ensure proper touch-action for scrolling */
+.radio-scroller {
+    touch-action: pan-x !important;
+    -webkit-overflow-scrolling: touch !important;
+    overflow-scrolling: touch !important;
+}
+
+/* Prevent text selection during dragging */
+.radio-timeline-bottom {
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+}
+
 .radio-timeline-bottom {
                     position: fixed;
                     bottom: 0;
