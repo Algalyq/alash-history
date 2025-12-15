@@ -103,6 +103,12 @@
         0 0 20px rgba(255,68,68,0.4);
 }
 
+.radio-scroller {
+    touch-action: pan-x; /* Only horizontal scrolling */
+    -webkit-overflow-scrolling: touch; /* Momentum on iOS */
+    overscroll-behavior-x: contain; /* Prevent page bounce */
+}
+
 /* Scrollable timeline */
 .radio-scroller {
     pointer-events: auto;

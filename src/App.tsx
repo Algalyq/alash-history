@@ -260,6 +260,7 @@ function App() {
           onYearChange={setCurrentYear}
           disable={isPanelOpen || isMapLoading}
         />
+        
     </>
   );
 }
