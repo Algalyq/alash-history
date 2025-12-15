@@ -163,8 +163,8 @@
     -ms-user-select: none;
     user-select: none;
     
-    /* Snap for better experience */
-    scroll-snap-type: x proximity;
+    /* Snap disabled - was interfering with mobile scroll */
+    scroll-snap-type: none;
 }
 
 /* iOS Safari specific fixes */
@@ -184,7 +184,8 @@
 }
 
 .timeline-spacer {
-    flex: 0 0 calc(50% - 10px);
+    flex: 0 0 50%; /* Ensure enough space to center first/last year */
+    min-width: 50%;
 }
 
 /* Radio Tick Wrapper */
@@ -302,7 +303,7 @@
         /* Enhanced mobile scrolling */
         -webkit-overflow-scrolling: touch !important;
         touch-action: pan-x !important;
-        scroll-snap-type: x mandatory;
+        scroll-snap-type: none; /* FIXED: mandatory was blocking free scroll */
     }
     
     .radio-tick-wrapper {

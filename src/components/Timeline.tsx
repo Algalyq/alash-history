@@ -28,20 +28,23 @@ const Timeline: React.FC<TimelineProps> = ({ currentYear, years, onYearChange, d
         }
     }, [currentYear]);
 
+    // Only update year AFTER scrolling stops (not during)
     const handleScroll = () => {
         if (!scrollerRef.current) return;
         isScrolling.current = true;
 
+        // Clear any pending timeout
         if (scrollTimeout.current) clearTimeout(scrollTimeout.current);
+        
+        // Wait 300ms after scroll stops before updating year
         scrollTimeout.current = setTimeout(() => {
             isScrolling.current = false;
-            snapToClosestYear();
-        }, 150);
-
-        updateYearFromScroll();
+            updateYearFromScrollPosition();
+        }, 300);
     };
     
-    const updateYearFromScroll = () => {
+    // Find and set the closest year based on current scroll position
+    const updateYearFromScrollPosition = () => {
         if (!scrollerRef.current) return;
         
         const container = scrollerRef.current;
@@ -62,43 +65,9 @@ const Timeline: React.FC<TimelineProps> = ({ currentYear, years, onYearChange, d
             }
         });
 
+        // Only update if different
         if (closestYear !== currentYear) {
             onYearChange(closestYear);
-        }
-    };
-    
-    const snapToClosestYear = () => {
-        if (!scrollerRef.current) return;
-        
-        const container = scrollerRef.current;
-        const center = container.scrollLeft + container.clientWidth / 2;
-
-        let closestYear = years[0];
-        let minDistance = Infinity;
-
-        years.forEach(year => {
-            const element = document.getElementById(`year-tick-${year}`);
-            if (element) {
-                const elementCenter = element.offsetLeft + element.clientWidth / 2;
-                const distance = Math.abs(center - elementCenter);
-                if (distance < minDistance) {
-                    minDistance = distance;
-                    closestYear = year;
-                }
-            }
-        });
-
-        if (closestYear !== currentYear) {
-            onYearChange(closestYear);
-        }
-        
-        const yearElement = document.getElementById(`year-tick-${closestYear}`);
-        if (yearElement && scrollerRef.current) {
-            const scrollLeft = yearElement.offsetLeft - container.clientWidth / 2 + yearElement.clientWidth / 2;
-            container.scrollTo({
-                left: scrollLeft,
-                behavior: 'smooth'
-            });
         }
     };
 

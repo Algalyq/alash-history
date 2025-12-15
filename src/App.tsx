@@ -12,7 +12,7 @@ import LandmarkPanel from './components/LandmarkPanel';
 import LoadingSpinner from './components/LoadingSpinner';
 
 
-const availableYears = [1986, 1991,2003,2025];
+const availableYears = [1986, 1991];
 
 function App() {
   const mapContainer = useRef<HTMLDivElement>(null);
