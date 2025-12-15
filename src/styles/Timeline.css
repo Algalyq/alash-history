@@ -13,10 +13,6 @@
     left: 0;
     width: 100%;
     height: 140px;
-    /* background: linear-gradient(to top, 
-        rgba(40, 40, 40, 0.98) 0%, 
-        rgba(40, 40, 40, 0.95) 60%, 
-        rgba(40, 40, 40, 0) 100%); */
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -24,8 +20,6 @@
     z-index: 1000;
     pointer-events: auto; /* FIXED: Changed to auto for mobile touch */
     user-select: none;
-    /* backdrop-filter: blur(10px); */
-    -webkit-backdrop-filter: blur(10px);
 }
 
 /* Re-enable pointer events for children */
@@ -35,7 +29,8 @@
 
 .radio-timeline-bottom.disabled {
     pointer-events: none;
-    opacity: 0.5;
+    display: none;
+    /* opacity: 0.5; */
 }
 
 /* Fade overlays for smooth edges */
@@ -280,9 +275,9 @@
 
 /* Hover Effects */
 .radio-tick-wrapper:hover .radio-tick {
-    background: linear-gradient(180deg, 
+    /* background: linear-gradient(180deg, 
         #aaa 0%, 
-        #888 100%);
+        #888 100%); */
     box-shadow: 0 0 5px rgba(255, 255, 255, 0.3);
 }
 
