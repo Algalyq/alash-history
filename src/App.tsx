@@ -14,11 +14,33 @@ import LoadingSpinner from './components/LoadingSpinner';
 
 const availableYears = [1922, 1937, 1933, 1986, 1991, 2019, 2022];
 
+// Helper function to find the closest year with available data
+function findClosestYearWithData(targetYear: number, yearsWithData: number[]): number {
+  if (yearsWithData.includes(targetYear)) {
+    return targetYear; // Exact match
+  }
+  
+  // Find closest year
+  let closestYear = yearsWithData[0];
+  let minDistance = Math.abs(targetYear - closestYear);
+  
+  for (const year of yearsWithData) {
+    const distance = Math.abs(targetYear - year);
+    if (distance < minDistance) {
+      minDistance = distance;
+      closestYear = year;
+    }
+  }
+  
+  return closestYear;
+}
+
 function App() {
   const mapContainer = useRef<HTMLDivElement>(null);
   const map = useRef<maplibregl.Map | null>(null);
   const [currentYear, setCurrentYear] = useState(1986);
   const [isMapLoading, setIsMapLoading] = useState(true);
+  const [hasExactYearData, setHasExactYearData] = useState(true);
   
   // State for landmark panel
   const [isPanelOpen, setIsPanelOpen] = useState(false);
@@ -92,23 +114,65 @@ function App() {
     // map.current.addControl(layersControl);
   }, []);
 
+  // Years with available data
+  const yearsWithMapData = [1986, 1991];
+  const yearsWithLandmarkData = [1986, 1991];
+  
   // Update map data when year changes
   useEffect(() => {
     if (!map.current || !map.current.loaded()) return;
-    updateMapData(currentYear);
+    
+    // Check if we have exact data for this year
+    const hasExactData = yearsWithMapData.includes(currentYear);
+    setHasExactYearData(hasExactData);
+    
+    // Find the closest year with data
+    const closestMapDataYear = findClosestYearWithData(currentYear, yearsWithMapData);
+    updateMapData(closestMapDataYear);
     
     // Update landmark data when year changes
     if (map.current.getSource('historical-landmarks')) {
-      const landmarkData = currentYear === 1986 ? almaty_1986 : almaty_1991;
-      (map.current.getSource('historical-landmarks') as maplibregl.GeoJSONSource).setData(landmarkData as any);
+      // Only show landmarks if we have data for this exact year
+      if (yearsWithLandmarkData.includes(currentYear)) {
+        const landmarkData = currentYear === 1986 ? almaty_1986 : almaty_1991;
+        (map.current.getSource('historical-landmarks') as maplibregl.GeoJSONSource).setData(landmarkData as any);
+        
+        // Show the landmarks layer
+        if (map.current.getLayer('historical-landmarks')) {
+          map.current.setLayoutProperty('historical-landmarks', 'visibility', 'visible');
+        }
+      } else {
+        // Hide landmarks for years without data
+        if (map.current.getLayer('historical-landmarks')) {
+          map.current.setLayoutProperty('historical-landmarks', 'visibility', 'none');
+        }
+      }
     }
   }, [currentYear]);
 
   const updateMapData = (year: number) => {
     if (!map.current) return;
-
-    const data = year === 1986 ? world1986 : world1991;
-    const landmarkData = year === 1986 ? almaty_1986 : almaty_1991;
+    
+    // Get appropriate data based on year
+    let data;
+    let landmarkData;
+    
+    // Select map data based on year
+    switch(year) {
+      case 1986:
+        data = world1986;
+        landmarkData = almaty_1986;
+        break;
+      case 1991:
+        data = world1991;
+        landmarkData = almaty_1991;
+        break;
+      default:
+        // Default to 1986 data if no match
+        data = world1986;
+        landmarkData = almaty_1986;
+    }
+    
     const sourceId = 'historical-world-borders';
 
     if (map.current.getSource(sourceId)) {
@@ -245,6 +309,13 @@ function App() {
       
       {/* Loading spinner */}
       {isMapLoading && <LoadingSpinner />}
+      
+      {/* Approximate data indicator */}
+      {!hasExactYearData && (
+        <div className="approximate-data-indicator">
+          Showing approximate data (exact data available for: {yearsWithMapData.join(', ')})
+        </div>
+      )}
       
       {/* Landmark Panel as a separate component */}
       <LandmarkPanel 

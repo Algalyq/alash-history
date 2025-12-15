@@ -1,4 +1,4 @@
-import React, { useRef, useEffect } from 'react';
+import React, { useRef, useEffect, useLayoutEffect } from 'react';
 import '../styles/Timeline.css';
 interface TimelineProps {
     currentYear: number;
@@ -11,16 +11,57 @@ const Timeline: React.FC<TimelineProps> = ({ currentYear, years, onYearChange, d
     const scrollerRef = useRef<HTMLDivElement>(null);
     const isScrolling = useRef(false);
     const scrollTimeout = useRef<NodeJS.Timeout | null>(null);
+    const initialRender = useRef(true);
 
-    // Center the current year
+    // Force immediate centering using useLayoutEffect (runs before browser paint)
+    useLayoutEffect(() => {
+        // Force immediate centering on mount
+        const forceInitialCentering = () => {
+            if (!scrollerRef.current) return;
+            
+            const yearElement = document.getElementById(`year-tick-${currentYear}`);
+            if (yearElement) {
+                const container = scrollerRef.current;
+                const scrollLeft = yearElement.offsetLeft - container.clientWidth / 2 + yearElement.clientWidth / 2;
+                
+                // Force immediate scroll with no animation
+                container.scrollLeft = scrollLeft;
+                
+                // Log for debugging
+                console.log(`Centering on year ${currentYear}, scrollLeft: ${scrollLeft}`);
+            } else {
+                console.log(`Year element for ${currentYear} not found`);
+            }
+        };
+        
+        // Try multiple times to ensure it works
+        if (initialRender.current) {
+            // Try immediately
+            forceInitialCentering();
+            
+            // Try again after DOM is ready with increasing delays
+            const timers = [
+                setTimeout(forceInitialCentering, 50),
+                setTimeout(forceInitialCentering, 200),
+                setTimeout(forceInitialCentering, 500),
+                setTimeout(forceInitialCentering, 1000)
+            ];
+            
+            initialRender.current = false;
+            
+            return () => timers.forEach(timer => clearTimeout(timer));
+        }
+    }, []); // Empty dependency array - only run on mount
+    
+    // Handle centering when year changes
     useEffect(() => {
-        if (isScrolling.current || !scrollerRef.current) return;
-
+        if (initialRender.current || isScrolling.current || !scrollerRef.current) return;
+        
         const yearElement = document.getElementById(`year-tick-${currentYear}`);
         if (yearElement) {
             const container = scrollerRef.current;
             const scrollLeft = yearElement.offsetLeft - container.clientWidth / 2 + yearElement.clientWidth / 2;
-
+            
             container.scrollTo({
                 left: scrollLeft,
                 behavior: 'smooth'
@@ -72,6 +113,19 @@ const Timeline: React.FC<TimelineProps> = ({ currentYear, years, onYearChange, d
     };
 
 
+    // Direct DOM manipulation after render
+    useEffect(() => {
+        // This runs after every render
+        if (scrollerRef.current) {
+            const yearElement = document.getElementById(`year-tick-${currentYear}`);
+            if (yearElement) {
+                // Force centering on current year
+                const scrollLeft = yearElement.offsetLeft - scrollerRef.current.clientWidth / 2 + yearElement.clientWidth / 2;
+                scrollerRef.current.scrollLeft = scrollLeft;
+            }
+        }
+    });
+    
     return (
         <div className={`radio-timeline-bottom ${disable ? 'disabled' : ''}`}>
             {/* Gradient fade overlays */}
