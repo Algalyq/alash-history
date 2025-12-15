@@ -1,4 +1,4 @@
-import React, { useRef, useEffect, useState } from 'react';
+import React, { useRef, useEffect } from 'react';
 import '../styles/Timeline.css';
 
 interface TimelineProps {
@@ -12,75 +12,6 @@ const Timeline: React.FC<TimelineProps> = ({ currentYear, years, onYearChange, d
     const scrollerRef = useRef<HTMLDivElement>(null);
     const isScrolling = useRef(false);
     const scrollTimeout = useRef<NodeJS.Timeout | null>(null);
-    const [touchStart, setTouchStart] = useState<number | null>(null);
-    const [touchEnd, setTouchEnd] = useState<number | null>(null);
-    const minSwipeDistance = 50;
-
-    // Touch handling for mobile
-    useEffect(() => {
-        if (scrollerRef.current) {
-            const scroller = scrollerRef.current;
-            let startX = 0;
-            let startY = 0;
-            
-            const handleTouchStart = (e: Event) => {
-                const touchEvent = e as any;
-                startX = touchEvent.touches[0].clientX;
-                startY = touchEvent.touches[0].clientY;
-                setTouchStart(startX);
-            };
-            
-            const handleTouchMove = (e: Event) => {
-                const touchEvent = e as any;
-                if (!startX || !startY) return;
-                
-                const currentX = touchEvent.touches[0].clientX;
-                const currentY = touchEvent.touches[0].clientY;
-                const diffX = startX - currentX;
-                const diffY = startY - currentY;
-                
-                if (Math.abs(diffX) > Math.abs(diffY)) {
-                    e.preventDefault();
-                    setTouchEnd(currentX);
-                }
-            };
-            
-            const handleTouchEnd = () => {
-                if (!touchStart || !touchEnd) return;
-                
-                const distance = touchStart - touchEnd;
-                const isLeftSwipe = distance > minSwipeDistance;
-                const isRightSwipe = distance < -minSwipeDistance;
-                
-                if (isLeftSwipe && currentYear < Math.max(...years)) {
-                    const currentIndex = years.indexOf(currentYear);
-                    if (currentIndex < years.length - 1) {
-                        onYearChange(years[currentIndex + 1]);
-                    }
-                } else if (isRightSwipe && currentYear > Math.min(...years)) {
-                    const currentIndex = years.indexOf(currentYear);
-                    if (currentIndex > 0) {
-                        onYearChange(years[currentIndex - 1]);
-                    }
-                }
-                
-                setTouchStart(null);
-                setTouchEnd(null);
-                startX = 0;
-                startY = 0;
-            };
-            
-            scroller.addEventListener('touchstart', handleTouchStart, { passive: true });
-            scroller.addEventListener('touchmove', handleTouchMove, { passive: false });
-            scroller.addEventListener('touchend', handleTouchEnd);
-            
-            return () => {
-                scroller.removeEventListener('touchstart', handleTouchStart);
-                scroller.removeEventListener('touchmove', handleTouchMove);
-                scroller.removeEventListener('touchend', handleTouchEnd);
-            };
-        }
-    }, [currentYear, years, minSwipeDistance, touchStart, touchEnd, onYearChange]);
 
     // Center the current year
     useEffect(() => {
@@ -209,30 +140,6 @@ const Timeline: React.FC<TimelineProps> = ({ currentYear, years, onYearChange, d
                 className="radio-scroller"
                 ref={scrollerRef}
                 onScroll={handleScroll}
-                onTouchStart={(e: React.TouchEvent) => setTouchStart(e.targetTouches[0].clientX)}
-                onTouchMove={(e: React.TouchEvent) => setTouchEnd(e.targetTouches[0].clientX)}
-                onTouchEnd={() => {
-                    if (!touchStart || !touchEnd) return;
-                    
-                    const distance = touchStart - touchEnd;
-                    const isLeftSwipe = distance > minSwipeDistance;
-                    const isRightSwipe = distance < -minSwipeDistance;
-                    
-                    if (isLeftSwipe && currentYear < Math.max(...years)) {
-                        const currentIndex = years.indexOf(currentYear);
-                        if (currentIndex < years.length - 1) {
-                            onYearChange(years[currentIndex + 1]);
-                        }
-                    } else if (isRightSwipe && currentYear > Math.min(...years)) {
-                        const currentIndex = years.indexOf(currentYear);
-                        if (currentIndex > 0) {
-                            onYearChange(years[currentIndex - 1]);
-                        }
-                    }
-                    
-                    setTouchStart(null);
-                    setTouchEnd(null);
-                }}
             >
                 <div className="timeline-spacer"></div>
                 {years.map((year, index) => {
@@ -272,15 +179,6 @@ const Timeline: React.FC<TimelineProps> = ({ currentYear, years, onYearChange, d
                                 onClick={() => {
                                     onYearChange(year);
                                     isScrolling.current = false;
-                                }}
-                                onTouchEnd={(e) => {
-                                    e.preventDefault();
-                                    e.stopPropagation();
-                                    
-                                    if (!touchStart || !touchEnd || Math.abs(touchStart - touchEnd) < 10) {
-                                        onYearChange(year);
-                                        isScrolling.current = false;
-                                    }
                                 }}
                             >
                                 <div className="radio-tick"></div>
