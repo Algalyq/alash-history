@@ -1,4 +1,4 @@
-import React, { useRef, useEffect } from 'react';
+import React, { useRef, useEffect, useState, TouchEvent } from 'react';
 import '../styles/Timeline.css';
 
 interface TimelineProps {
@@ -12,7 +12,33 @@ const Timeline: React.FC<TimelineProps> = ({ currentYear, years, onYearChange, d
     const scrollerRef = useRef<HTMLDivElement>(null);
     const isScrolling = useRef(false);
     const scrollTimeout = useRef<NodeJS.Timeout | null>(null);
+    
+    // Touch handling for swipe gestures
+    const [touchStart, setTouchStart] = useState<number | null>(null);
+    const [touchEnd, setTouchEnd] = useState<number | null>(null);
+    
+    // Minimum swipe distance (in px)
+    const minSwipeDistance = 50;
 
+    // Add passive touch listeners for iOS devices
+    useEffect(() => {
+        if (scrollerRef.current) {
+            const scroller = scrollerRef.current;
+            
+            // Add passive touch listeners for better performance on iOS
+            const options = { passive: true };
+            
+            // These are additional native event listeners that help with iOS touch handling
+            scroller.addEventListener('touchstart', () => {}, options);
+            scroller.addEventListener('touchmove', () => {}, options);
+            
+            return () => {
+                scroller.removeEventListener('touchstart', () => {});
+                scroller.removeEventListener('touchmove', () => {});
+            };
+        }
+    }, []);
+    
     // Center the current year when component mounts or currentYear changes (if not scrolling manually)
     useEffect(() => {
         if (isScrolling.current || !scrollerRef.current) return;
@@ -140,6 +166,33 @@ const Timeline: React.FC<TimelineProps> = ({ currentYear, years, onYearChange, d
                 className="timeline-scroller"
                 ref={scrollerRef}
                 onScroll={handleScroll}
+                onTouchStart={(e: TouchEvent) => setTouchStart(e.targetTouches[0].clientX)}
+                onTouchMove={(e: TouchEvent) => setTouchEnd(e.targetTouches[0].clientX)}
+                onTouchEnd={() => {
+                    if (!touchStart || !touchEnd) return;
+                    
+                    const distance = touchStart - touchEnd;
+                    const isLeftSwipe = distance > minSwipeDistance;
+                    const isRightSwipe = distance < -minSwipeDistance;
+                    
+                    if (isLeftSwipe && currentYear < Math.max(...years)) {
+                        // Find next year in the array
+                        const currentIndex = years.indexOf(currentYear);
+                        if (currentIndex < years.length - 1) {
+                            onYearChange(years[currentIndex + 1]);
+                        }
+                    } else if (isRightSwipe && currentYear > Math.min(...years)) {
+                        // Find previous year in the array
+                        const currentIndex = years.indexOf(currentYear);
+                        if (currentIndex > 0) {
+                            onYearChange(years[currentIndex - 1]);
+                        }
+                    }
+                    
+                    // Reset values
+                    setTouchStart(null);
+                    setTouchEnd(null);
+                }}
             >
                 <div className="timeline-spacer"></div>
                 {years.map((year, index) => {
@@ -150,8 +203,6 @@ const Timeline: React.FC<TimelineProps> = ({ currentYear, years, onYearChange, d
                     // Calculate intermediate years/frequencies if there's a next year
                     const intermediateMarkers = [];
                     if (hasNextYear) {
-                        // Add more intermediate markers between main markers (like radio frequency)
-                        // const yearDiff = nextYear - year; // Not currently used
                         const markerCount = 4; // More markers for dense radio frequency look
                         
                         for (let i = 1; i <= markerCount; i++) {

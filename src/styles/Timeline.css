@@ -11,7 +11,8 @@
     align-items: center;
     justify-content: flex-end;
     z-index: 1000;
-    pointer-events: none;
+    pointer-events: auto; /* Changed from none to auto to allow interaction */
+    touch-action: pan-x; /* Enable horizontal touch gestures */
 }
 
 
@@ -35,6 +36,8 @@
     scroll-behavior: smooth;
     cursor: grab;
     position: relative; /* Added for better positioning context */
+    -webkit-overflow-scrolling: touch; /* Improve momentum scrolling on iOS */
+    touch-action: pan-x; /* Enable horizontal touch gestures */
 }
 
 .timeline-scroller::-webkit-scrollbar {
@@ -175,10 +178,14 @@
 @media (max-width: 600px) {
     .timeline-container {
         height: 140px; /* Increase height for better touch area */
+        touch-action: pan-x; /* Ensure horizontal touch gestures work */
     }
     
     .timeline-scroller {
-        height: 100px;    /* Improve touch area for iPhone 12 Mini and similar small devices */
+        height: 100px; /* Improve touch area for iPhone 12 Mini and similar small devices */
+        -webkit-overflow-scrolling: touch; /* Improve momentum scrolling on iOS */
+        touch-action: pan-x; /* Enable horizontal touch gestures */
+        user-select: none; /* Prevent text selection during swipe */
     }
     
     .timeline-tick-wrapper {
@@ -207,23 +214,34 @@
         height: 50px; /* Increased height for mobile */
     }
     
-    /* Improve touch area for iPhone 12 Mini and similar small devices */
-    @media (max-width: 375px) {
-        .timeline-tick-wrapper {
-            flex: 0 0 60px; /* Narrower width for very small screens */
-            padding: 5px; /* Reduced padding for better alignment */
-        }
-        
-        .timeline-spacer {
-            flex: 0 0 calc(50% - 30px); /* Adjusted spacers for very small screens */
-        }
-        
-        .timeline-tick-wrapper.intermediate {
-            flex: 0 0 8px; /* Even smaller intermediate ticks */
-        }
-        
-        .year-label {
-            font-size: 16px; /* Adjusted text size */
-        }
+}
+
+/* Improve touch area for iPhone 12 Mini and similar small devices */
+@media (max-width: 375px) {
+    .timeline-container {
+        height: 150px; /* Even more height for very small screens */
+    }
+    
+    .timeline-scroller {
+        height: 110px; /* Increased height for better touch area */
+        -webkit-overflow-scrolling: touch; /* Ensure momentum scrolling works */
+    }
+    
+    .timeline-tick-wrapper {
+        flex: 0 0 60px; /* Narrower width for very small screens */
+        padding: 5px; /* Reduced padding for better alignment */
+        height: 80px; /* Increased height for better touch targets */
+    }
+    
+    .timeline-spacer {
+        flex: 0 0 calc(50% - 30px); /* Adjusted spacers for very small screens */
+    }
+    
+    .timeline-tick-wrapper.intermediate {
+        flex: 0 0 8px; /* Even smaller intermediate ticks */
+    }
+    
+    .year-label {
+        font-size: 16px; /* Adjusted text size */
     }
 }

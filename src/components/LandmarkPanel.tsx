@@ -54,7 +54,6 @@ const LandmarkPanel: React.FC<LandmarkPanelProps> = ({ isOpen, onClose, landmark
           }
           return '';
         }).filter(img => img !== '');
-        console.log("Processed images:", processedImages);
       } else if (typeof landmark.images === 'string') {
         if (landmark.images.includes(',')) {
           // If it's a comma-separated string, split it into an array
@@ -293,11 +292,9 @@ const LandmarkPanel: React.FC<LandmarkPanelProps> = ({ isOpen, onClose, landmark
           >
             {images.map((image: string, index: number) => {
               // Ensure image is a clean string
-              console.log("Original Image URL:", image);
               // Remove any array brackets if they exist - using character classes instead of escaping
               const cleanImage = image.replace(/[["\]]/g, '');
               const imageUrl = cleanImage;
-              console.log("Cleaned Image URL:", imageUrl);
               
               return (
                 <div 
