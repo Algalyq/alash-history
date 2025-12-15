@@ -13,6 +13,8 @@
     z-index: 1000;
     pointer-events: auto; /* Changed from none to auto to allow interaction */
     touch-action: pan-x; /* Enable horizontal touch gestures */
+    -webkit-tap-highlight-color: transparent; /* Remove tap highlight on mobile */
+    user-select: none; /* Prevent text selection */
 }
 
 
@@ -38,6 +40,11 @@
     position: relative; /* Added for better positioning context */
     -webkit-overflow-scrolling: touch; /* Improve momentum scrolling on iOS */
     touch-action: pan-x; /* Enable horizontal touch gestures */
+    -webkit-tap-highlight-color: transparent; /* Remove tap highlight on mobile */
+    user-select: none; /* Prevent text selection */
+    will-change: transform; /* Optimize for animations */
+    transform: translateZ(0); /* Force GPU acceleration */
+    -webkit-transform: translateZ(0); /* For Safari */
 }
 
 .timeline-scroller::-webkit-scrollbar {
@@ -49,11 +56,10 @@
 }
 
 .timeline-spacer {
-    flex: 0 0 calc(50% - 40px); /* Adjusted to account for the new tick wrapper width */
+    flex: 0 0 calc(50% - 10px); /* Adjusted to account for the new tick wrapper width */
 }
 
 .timeline-tick-wrapper {
-    flex: 0 0 80px; /* Reduced width for better spacing */
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -67,9 +73,10 @@
 
 /* Intermediate tick wrappers are smaller and not clickable */
 .timeline-tick-wrapper.intermediate {
-    flex: 0 0 15px; /* Much smaller width for radio frequency look */
     cursor: default;
-    height: 40px; 
+    height: 40px;
+    margin: 0; /* Remove any margin */
+    padding: 0; /* Remove any padding */
 }
 
 .timeline-tick {
@@ -179,6 +186,8 @@
     .timeline-container {
         height: 140px; /* Increase height for better touch area */
         touch-action: pan-x; /* Ensure horizontal touch gestures work */
+        bottom: 0; /* Ensure it's at the bottom */
+        z-index: 1500; /* Higher z-index to ensure it's on top */
     }
     
     .timeline-scroller {
@@ -186,17 +195,26 @@
         -webkit-overflow-scrolling: touch; /* Improve momentum scrolling on iOS */
         touch-action: pan-x; /* Enable horizontal touch gestures */
         user-select: none; /* Prevent text selection during swipe */
+        transform: translateZ(0); /* Force GPU acceleration */
+        -webkit-transform: translateZ(0); /* For Safari */
+        will-change: transform; /* Optimize for animations */
+    }
+    
+    /* Make the touch targets larger */
+    .timeline-tick-wrapper {
+        min-height: 70px; /* Ensure minimum height for touch */
+        min-width: 24px; /* Ensure minimum width for touch */
     }
     
     .timeline-tick-wrapper {
-        flex: 0 0 70px; /* Reduced width on mobile */
         padding: 5px; /* Reduced padding for better alignment */
         height: 70px; /* Increased height to match needle */
     }
     
     .timeline-tick-wrapper.intermediate {
-        flex: 0 0 10px; /* Reduced width for intermediate ticks on mobile */
         height: 50px; /* Adjusted height */
+        margin: 0; /* Remove any margin */
+        padding: 0; /* Remove any padding */
     }
 
     .current-year-display {
@@ -211,7 +229,7 @@
     
     /* Ensure active ticks are properly sized */
     .timeline-tick-wrapper.active .timeline-tick {
-        height: 50px; /* Increased height for mobile */
+        max-height: 50px; /* Increased height for mobile */
     }
     
 }
@@ -228,17 +246,17 @@
     }
     
     .timeline-tick-wrapper {
-        flex: 0 0 60px; /* Narrower width for very small screens */
         padding: 5px; /* Reduced padding for better alignment */
         height: 80px; /* Increased height for better touch targets */
     }
     
     .timeline-spacer {
-        flex: 0 0 calc(50% - 30px); /* Adjusted spacers for very small screens */
+        flex: 0 0 calc(50% - 10px); /* Adjusted spacers for very small screens */
     }
     
     .timeline-tick-wrapper.intermediate {
-        flex: 0 0 8px; /* Even smaller intermediate ticks */
+        margin: 0; /* Remove any margin */
+        padding: 0; /* Remove any padding */
     }
     
     .year-label {
