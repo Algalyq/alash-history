@@ -1,344 +1,430 @@
-/* Ensure proper touch-action for scrolling */
-.radio-scroller {
-    touch-action: pan-x !important;
-    -webkit-overflow-scrolling: touch !important;
-    overflow-scrolling: touch !important;
+/* Radio Timeline Styles - Mobile Scrolling Fixed */
+
+/* Global mobile optimizations */
+* {
+    -webkit-tap-highlight-color: transparent;
+    -webkit-touch-callout: none;
 }
 
-/* Prevent text selection during dragging */
+/* Radio Timeline Bottom Container */
 .radio-timeline-bottom {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    height: 140px;
+    background: linear-gradient(to top, 
+        rgba(40, 40, 40, 0.98) 0%, 
+        rgba(40, 40, 40, 0.95) 60%, 
+        rgba(40, 40, 40, 0) 100%);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-end;
+    z-index: 1000;
+    pointer-events: none; /* Changed from auto to none */
+    user-select: none;
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    /* Remove conflicting touch-action from parent */
+    /* touch-action: pan-x; ← REMOVED */
+}
+
+/* Re-enable pointer events for children */
+.radio-timeline-bottom > * {
+    pointer-events: auto;
+}
+
+.radio-timeline-bottom.disabled {
+    pointer-events: none;
+    opacity: 0.5;
+}
+
+/* Fade overlays for smooth edges */
+.timeline-fade-left,
+.timeline-fade-right {
+    position: absolute;
+    bottom: 0;
+    width: 20%;
+    height: 90px;
+    z-index: 5;
+    pointer-events: none;
+}
+
+.timeline-fade-left {
+    left: 0;
+    background: linear-gradient(to right, 
+        rgba(40, 40, 40, 0.95), 
+        transparent);
+}
+
+.timeline-fade-right {
+    right: 0;
+    background: linear-gradient(to left, 
+        rgba(40, 40, 40, 0.95), 
+        transparent);
+}
+
+/* Year Display Window - Radio Style */
+.year-display-window {
+    position: absolute;
+    bottom: 100px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: linear-gradient(145deg, #1a1a1a, #0d0d0d);
+    border: 2px solid #333;
+    border-radius: 8px;
+    padding: 8px 20px;
+    box-shadow: 
+        inset 0 2px 8px rgba(0, 0, 0, 0.8),
+        0 4px 15px rgba(0, 0, 0, 0.5);
+    z-index: 15;
+    pointer-events: none;
+}
+
+.display-inner {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+}
+
+.year-number {
+    font-family: 'Courier New', monospace;
+    font-size: 2.5rem;
+    font-weight: 700;
+    color: #00ff88;
+    text-shadow: 
+        0 0 10px rgba(0, 255, 136, 0.8),
+        0 0 20px rgba(0, 255, 136, 0.4),
+        0 0 30px rgba(0, 255, 136, 0.2);
+    letter-spacing: 3px;
+    line-height: 1;
+}
+
+.led-strip {
+    width: 100%;
+    height: 3px;
+    background: linear-gradient(90deg, 
+        transparent 0%, 
+        #00ff88 50%, 
+        transparent 100%);
+    box-shadow: 0 0 8px rgba(0, 255, 136, 0.6);
+    border-radius: 2px;
+    animation: pulse-strip 2s ease-in-out infinite;
+}
+
+@keyframes pulse-strip {
+    0%, 100% { opacity: 0.6; }
+    50% { opacity: 1; }
+}
+
+/* Radio Needle */
+.radio-needle {
+    position: absolute;
+    bottom: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 4px;
+    height: 70px;
+    background: linear-gradient(180deg, 
+        #ff4444 0%, 
+        #cc0000 100%);
+    border-radius: 2px 2px 0 0;
+    z-index: 10;
+    pointer-events: none;
+    box-shadow: 
+        0 0 10px rgba(255, 68, 68, 0.8),
+        0 0 20px rgba(255, 68, 68, 0.4);
+}
+
+.needle-glow {
+    position: absolute;
+    top: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 12px;
+    height: 12px;
+    background: radial-gradient(circle, 
+        rgba(255, 68, 68, 0.8) 0%, 
+        rgba(255, 68, 68, 0) 70%);
+    filter: blur(4px);
+}
+
+/* Radio Scroller - FIXED FOR MOBILE */
+.radio-scroller {
+    pointer-events: auto;
+    display: flex;
+    align-items: flex-end;
+    overflow-x: auto;
+    overflow-y: hidden;
+    width: 100%;
+    height: 90px;
+    padding-bottom: 20px;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+    scroll-behavior: smooth;
+    cursor: grab;
+    position: relative;
+    
+    /* FIXED: Mobile scrolling properties */
+    -webkit-overflow-scrolling: touch !important;
+    overflow-scrolling: touch !important;
+    touch-action: pan-x !important;
+    overscroll-behavior-x: contain;
+    
+    /* Prevent text selection */
     -webkit-user-select: none;
     -moz-user-select: none;
     -ms-user-select: none;
     user-select: none;
+    
+    /* Remove potentially interfering properties */
+    /* will-change: transform; ← REMOVED */
+    /* transform: translateZ(0); ← REMOVED */
+    /* -webkit-transform: translateZ(0); ← REMOVED */
+    
+    /* Better mobile performance */
+    backface-visibility: hidden;
+    -webkit-backface-visibility: hidden;
+    
+    /* Prevent iOS pull-to-refresh */
+    overscroll-behavior: none;
+    
+    /* Snap for better mobile experience */
+    scroll-snap-type: x proximity;
 }
 
-.radio-timeline-bottom {
-                    position: fixed;
-                    bottom: 0;
-                    left: 0;
-                    width: 100%;
-                    height: 140px;
-                    background: linear-gradient(to top, 
-                        rgba(40, 40, 40, 0.98) 0%, 
-                        rgba(40, 40, 40, 0.95) 60%, 
-                        rgba(40, 40, 40, 0) 100%);
-                    display: flex;
-                    flex-direction: column;
-                    align-items: center;
-                    justify-content: flex-end;
-                    z-index: 1000;
-                    pointer-events: auto;
-                    touch-action: pan-x;
-                    user-select: none;
-                    backdrop-filter: blur(10px);
-                    -webkit-backdrop-filter: blur(10px);
-                }
+/* iOS Safari specific fixes */
+@supports (-webkit-overflow-scrolling: touch) {
+    .radio-scroller {
+        -webkit-overflow-scrolling: touch;
+    }
+}
 
-                .radio-timeline-bottom.disabled {
-                    pointer-events: none;
-                    opacity: 0.5;
-                }
+/* Hide scrollbars */
+.radio-scroller::-webkit-scrollbar {
+    display: none;
+}
 
-                /* Fade overlays for smooth edges */
-                .timeline-fade-left,
-                .timeline-fade-right {
-                    position: absolute;
-                    bottom: 0;
-                    width: 20%;
-                    height: 90px;
-                    z-index: 5;
-                    pointer-events: none;
-                }
+.radio-scroller:active {
+    cursor: grabbing;
+}
 
-                .timeline-fade-left {
-                    left: 0;
-                    background: linear-gradient(to right, 
-                        rgba(40, 40, 40, 0.95), 
-                        transparent);
-                }
+.timeline-spacer {
+    flex: 0 0 calc(50% - 10px);
+}
 
-                .timeline-fade-right {
-                    right: 0;
-                    background: linear-gradient(to left, 
-                        rgba(40, 40, 40, 0.95), 
-                        transparent);
-                }
+/* Radio Tick Wrapper */
+.radio-tick-wrapper {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-end;
+    position: relative;
+    transition: opacity 0.3s ease;
+    cursor: pointer;
+    user-select: none;
+    height: 70px;
+    min-width: 20px;
+    padding: 0 5px;
+    /* Add for better mobile snapping */
+    scroll-snap-align: center;
+    flex-shrink: 0;
+}
 
-                /* Year Display Window - Radio Style */
-                .year-display-window {
-                    position: absolute;
-                    bottom: 100px;
-                    left: 50%;
-                    transform: translateX(-50%);
-                    background: linear-gradient(145deg, #1a1a1a, #0d0d0d);
-                    border: 2px solid #333;
-                    border-radius: 8px;
-                    padding: 8px 20px;
-                    box-shadow: 
-                        inset 0 2px 8px rgba(0, 0, 0, 0.8),
-                        0 4px 15px rgba(0, 0, 0, 0.5);
-                    z-index: 15;
-                    pointer-events: none;
-                }
+.radio-tick-wrapper.intermediate {
+    cursor: default;
+    height: 50px;
+    margin: 0;
+    padding: 0;
+    min-width: 12px;
+    scroll-snap-align: none;
+}
 
-                .display-inner {
-                    display: flex;
-                    flex-direction: column;
-                    align-items: center;
-                    gap: 4px;
-                }
+/* Radio Tick Lines */
+.radio-tick {
+    width: 3px;
+    height: 25px;
+    background: linear-gradient(180deg, 
+        #888 0%, 
+        #666 100%);
+    border-radius: 2px;
+    transition: all 0.3s ease;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+}
 
-                .year-number {
-                    font-family: 'Courier New', monospace;
-                    font-size: 2.5rem;
-                    font-weight: 700;
-                    color: #00ff88;
-                    text-shadow: 
-                        0 0 10px rgba(0, 255, 136, 0.8),
-                        0 0 20px rgba(0, 255, 136, 0.4),
-                        0 0 30px rgba(0, 255, 136, 0.2);
-                    letter-spacing: 3px;
-                    line-height: 1;
-                }
+.radio-tick.intermediate {
+    width: 1.5px;
+    height: 10px;
+    background: #555;
+}
 
-                .led-strip {
-                    width: 100%;
-                    height: 3px;
-                    background: linear-gradient(90deg, 
-                        transparent 0%, 
-                        #00ff88 50%, 
-                        transparent 100%);
-                    box-shadow: 0 0 8px rgba(0, 255, 136, 0.6);
-                    border-radius: 2px;
-                    animation: pulse-strip 2s ease-in-out infinite;
-                }
+.radio-tick.intermediate.medium {
+    height: 15px;
+    width: 2px;
+    background: #666;
+}
 
-                @keyframes pulse-strip {
-                    0%, 100% { opacity: 0.6; }
-                    50% { opacity: 1; }
-                }
+.radio-tick.intermediate.small {
+    height: 10px;
+    width: 1.5px;
+    background: #555;
+}
 
-                /* Radio Needle */
-                .radio-needle {
-                    position: absolute;
-                    bottom: 20px;
-                    left: 50%;
-                    transform: translateX(-50%);
-                    width: 4px;
-                    height: 70px;
-                    background: linear-gradient(180deg, 
-                        #ff4444 0%, 
-                        #cc0000 100%);
-                    border-radius: 2px 2px 0 0;
-                    z-index: 10;
-                    pointer-events: none;
-                    box-shadow: 
-                        0 0 10px rgba(255, 68, 68, 0.8),
-                        0 0 20px rgba(255, 68, 68, 0.4);
-                }
+/* Active Tick */
+.radio-tick-wrapper.active .radio-tick {
+    background: linear-gradient(180deg, 
+        #ff4444 0%, 
+        #cc0000 100%);
+    height: 50px;
+    width: 4px;
+    box-shadow: 
+        0 0 10px rgba(255, 68, 68, 0.6),
+        0 0 20px rgba(255, 68, 68, 0.3),
+        0 2px 4px rgba(0, 0, 0, 0.3);
+}
 
-                .needle-glow {
-                    position: absolute;
-                    top: 0;
-                    left: 50%;
-                    transform: translateX(-50%);
-                    width: 12px;
-                    height: 12px;
-                    background: radial-gradient(circle, 
-                        rgba(255, 68, 68, 0.8) 0%, 
-                        rgba(255, 68, 68, 0) 70%);
-                    filter: blur(4px);
-                }
+/* Tick Labels */
+.tick-label {
+    margin-top: 6px;
+    font-family: 'Courier New', monospace;
+    font-size: 12px;
+    font-weight: 600;
+    color: #888;
+    opacity: 0.7;
+    transition: all 0.3s ease;
+    letter-spacing: 0.5px;
+}
 
-                /* Radio Scroller */
-                .radio-scroller {
-                    pointer-events: auto;
-                    display: flex;
-                    align-items: flex-end;
-                    overflow-x: auto;
-                    overflow-y: hidden;
-                    width: 100%;
-                    height: 90px;
-                    padding-bottom: 20px;
-                    scrollbar-width: none;
-                    -ms-overflow-style: none;
-                    scroll-behavior: smooth;
-                    cursor: grab;
-                    position: relative;
-                    -webkit-overflow-scrolling: touch;
-                    touch-action: pan-x;
-                    user-select: none;
-                    will-change: transform;
-                    transform: translateZ(0);
-                    -webkit-transform: translateZ(0);
-                }
+.radio-tick-wrapper.active .tick-label {
+    color: #00ff88;
+    font-size: 14px;
+    font-weight: 700;
+    opacity: 1;
+    text-shadow: 0 0 8px rgba(0, 255, 136, 0.5);
+}
 
-                .radio-scroller::-webkit-scrollbar {
-                    display: none;
-                }
+/* Hover Effects */
+.radio-tick-wrapper:hover .radio-tick {
+    background: linear-gradient(180deg, 
+        #aaa 0%, 
+        #888 100%);
+    box-shadow: 0 0 5px rgba(255, 255, 255, 0.3);
+}
 
-                .radio-scroller:active {
-                    cursor: grabbing;
-                }
+.radio-tick-wrapper:hover .tick-label {
+    color: #bbb;
+    opacity: 1;
+}
 
-                .timeline-spacer {
-                    flex: 0 0 calc(50% - 10px);
-                }
+/* Enhanced Mobile Responsiveness */
+@media (max-width: 600px) {
+    .radio-timeline-bottom {
+        height: 160px;
+    }
+    
+    .radio-scroller {
+        height: 110px;
+        padding-bottom: 25px;
+        /* Enhanced mobile scrolling */
+        -webkit-overflow-scrolling: touch !important;
+        touch-action: pan-x !important;
+        scroll-snap-type: x mandatory;
+    }
+    
+    .radio-tick-wrapper {
+        height: 80px;
+        min-width: 24px;
+        scroll-snap-align: center;
+        flex-shrink: 0;
+    }
+    
+    .radio-tick-wrapper.intermediate {
+        height: 60px;
+        scroll-snap-align: none;
+    }
 
-                /* Radio Tick Wrapper */
-                .radio-tick-wrapper {
-                    display: flex;
-                    flex-direction: column;
-                    align-items: center;
-                    justify-content: flex-end;
-                    position: relative;
-                    transition: opacity 0.3s ease;
-                    cursor: pointer;
-                    user-select: none;
-                    height: 70px;
-                    min-width: 20px;
-                    padding: 0 5px;
-                }
+    .year-display-window {
+        bottom: 120px;
+    }
+    
+    .year-number {
+        font-size: 2rem;
+    }
+    
+    .radio-needle {
+        height: 80px;
+    }
+    
+    .radio-tick-wrapper.active .radio-tick {
+        height: 55px;
+    }
+    
+    /* iOS Safe Area Support */
+    @supports (padding: max(0px)) {
+        .radio-timeline-bottom {
+            padding-bottom: max(20px, env(safe-area-inset-bottom));
+        }
+    }
+}
 
-                .radio-tick-wrapper.intermediate {
-                    cursor: default;
-                    height: 50px;
-                    margin: 0;
-                    padding: 0;
-                    min-width: 12px;
-                }
+/* Small Mobile Devices */
+@media (max-width: 375px) {
+    .radio-timeline-bottom {
+        height: 170px;
+    }
+    
+    .radio-scroller {
+        height: 120px;
+        padding-bottom: 30px;
+    }
+    
+    .radio-tick-wrapper {
+        height: 90px;
+        min-width: 28px;
+    }
+    
+    .year-display-window {
+        bottom: 130px;
+        padding: 6px 16px;
+    }
+    
+    .tick-label {
+        font-size: 13px;
+    }
+    
+    .year-number {
+        font-size: 1.8rem;
+    }
+}
 
-                /* Radio Tick Lines */
-                .radio-tick {
-                    width: 3px;
-                    height: 25px;
-                    background: linear-gradient(180deg, 
-                        #888 0%, 
-                        #666 100%);
-                    border-radius: 2px;
-                    transition: all 0.3s ease;
-                    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
-                }
+/* Tablet and Larger Mobile */
+@media (min-width: 601px) and (max-width: 1024px) {
+    .radio-scroller {
+        -webkit-overflow-scrolling: touch;
+        touch-action: pan-x;
+        scroll-snap-type: x proximity;
+    }
+}
 
-                .radio-tick.intermediate {
-                    width: 1.5px;
-                    height: 10px;
-                    background: #555;
-                }
+/* Prevent content jumping on mobile */
+html {
+    overflow-x: hidden;
+    position: relative;
+    height: 100%;
+}
 
-                .radio-tick.intermediate.medium {
-                    height: 15px;
-                    width: 2px;
-                    background: #666;
-                }
+body {
+    overflow-x: hidden;
+    position: relative;
+    height: 100%;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+}
 
-                .radio-tick.intermediate.small {
-                    height: 10px;
-                    width: 1.5px;
-                    background: #555;
-                }
-
-                /* Active Tick */
-                .radio-tick-wrapper.active .radio-tick {
-                    background: linear-gradient(180deg, 
-                        #ff4444 0%, 
-                        #cc0000 100%);
-                    height: 50px;
-                    width: 4px;
-                    box-shadow: 
-                        0 0 10px rgba(255, 68, 68, 0.6),
-                        0 0 20px rgba(255, 68, 68, 0.3),
-                        0 2px 4px rgba(0, 0, 0, 0.3);
-                }
-
-                /* Tick Labels */
-                .tick-label {
-                    margin-top: 6px;
-                    font-family: 'Courier New', monospace;
-                    font-size: 12px;
-                    font-weight: 600;
-                    color: #888;
-                    opacity: 0.7;
-                    transition: all 0.3s ease;
-                    letter-spacing: 0.5px;
-                }
-
-                .radio-tick-wrapper.active .tick-label {
-                    color: #00ff88;
-                    font-size: 14px;
-                    font-weight: 700;
-                    opacity: 1;
-                    text-shadow: 0 0 8px rgba(0, 255, 136, 0.5);
-                }
-
-                /* Hover Effects */
-                .radio-tick-wrapper:hover .radio-tick {
-                    background: linear-gradient(180deg, 
-                        #aaa 0%, 
-                        #888 100%);
-                    box-shadow: 0 0 5px rgba(255, 255, 255, 0.3);
-                }
-
-                .radio-tick-wrapper:hover .tick-label {
-                    color: #bbb;
-                    opacity: 1;
-                }
-
-                /* Mobile Responsiveness */
-                @media (max-width: 600px) {
-                    .radio-timeline-bottom {
-                        height: 160px;
-                    }
-                    
-                    .radio-scroller {
-                        height: 110px;
-                    }
-                    
-                    .radio-tick-wrapper {
-                        height: 80px;
-                        min-width: 24px;
-                    }
-                    
-                    .radio-tick-wrapper.intermediate {
-                        height: 60px;
-                    }
-
-                    .year-display-window {
-                        bottom: 120px;
-                    }
-                    
-                    .year-number {
-                        font-size: 2rem;
-                    }
-                    
-                    .radio-needle {
-                        height: 80px;
-                    }
-                    
-                    .radio-tick-wrapper.active .radio-tick {
-                        height: 55px;
-                    }
-                }
-
-                @media (max-width: 375px) {
-                    .radio-timeline-bottom {
-                        height: 170px;
-                    }
-                    
-                    .radio-scroller {
-                        height: 120px;
-                    }
-                    
-                    .radio-tick-wrapper {
-                        height: 90px;
-                    }
-                    
-                    .year-display-window {
-                        bottom: 130px;
-                    }
-                    
-                    .tick-label {
-                        font-size: 13px;
-                    }
-                }
+/* Ensure no interference from parent containers */
+.radio-timeline-container {
+    overflow: visible !important;
+    position: relative !important;
+}
